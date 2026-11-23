@@ -1,6 +1,7 @@
 const taskForm = document.getElementById('task-form');
 const taskInput = document.getElementById('task-input');
 const taskList = document.getElementById('task-list');
+const pendingCount = document.getElementById('pending-count');
 
 let tasks = [];
 
@@ -31,12 +32,18 @@ function createTaskElement(task) {
   return li;
 }
 
+function updatePendingCount() {
+  const pending = tasks.filter((task) => !task.completed).length;
+  pendingCount.textContent = pending;
+}
+
 function renderTasks() {
   taskList.innerHTML = '';
 
   const fragment = document.createDocumentFragment();
   tasks.forEach((task) => fragment.appendChild(createTaskElement(task)));
   taskList.appendChild(fragment);
+  updatePendingCount();
 }
 
 function addTask(event) {
@@ -56,4 +63,25 @@ function addTask(event) {
   renderTasks();
 }
 
+function handleTaskAction(event) {
+  const item = event.target.closest('.task-item');
+  if (!item) return;
+
+  const { id } = item.dataset;
+
+  if (event.target.classList.contains('delete-btn')) {
+    tasks = tasks.filter((task) => task.id !== id);
+    renderTasks();
+    return;
+  }
+
+  if (event.target.type === 'checkbox') {
+    tasks = tasks.map((task) =>
+      task.id === id ? { ...task, completed: !task.completed } : task
+    );
+    renderTasks();
+  }
+}
+
 taskForm.addEventListener('submit', addTask);
+taskList.addEventListener('click', handleTaskAction);
